@@ -1,5 +1,9 @@
 HELLO_WORDS = 'Привет!!!\nЯ - Бот-Crugelka и сейчас мы поможем выбрать Вам винил!'
 UNAUTHORIZED_ERROR = 'Вы не Администратор!'
+DOWNLOAD_LOADING = 'Подготовка файла к загрузке...'
+DOWNLOAD_COMPLETED = 'Файл загружен! Запущен процесс обновления базы данных...'
+MIGRATION_COMPLETED = 'Миграция окончена!'
+IMAGE_DOWNLOAD_COMPLETED = 'Изображение загружено!'
 
 
 def generate_users_string(cursor):

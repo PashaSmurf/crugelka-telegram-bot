@@ -23,6 +23,14 @@ class DBContainer:
         except errors.Error as err:
             print(err)
 
+    def multirow_insert(self, query: str, values: list):
+        try:
+            my_cursor = self._get_connection().cursor()
+            my_cursor.executemany(query, values)
+            self.db_connection.commit()
+        except errors.Error as err:
+            print(err)
+
     def _get_connection(self):
         if not self.db_connection:
             self.db_connection = self._connect()

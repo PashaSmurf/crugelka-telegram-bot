@@ -6,6 +6,8 @@ name = "pypi"
 [packages]
 aiogram = "*"
 mysql-connector-python = "*"
+pandas = "*"
+xlrd = "*"
 
 [dev-packages]
 
