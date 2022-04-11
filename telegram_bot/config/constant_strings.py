@@ -14,3 +14,15 @@ def generate_users_string(cursor):
         user_number += 1
 
     return message
+
+
+def generate_catalog_string(cursor):
+    message = 'Результаты:\n'
+    # vinyl_number = 1
+    # results = cursor.fetchall()
+    # c = results[0]
+    # for row in cursor:
+    #     message += f'{vinyl_number}. {row[1]}\n'
+    #     vinyl_number += 1
+
+    return message

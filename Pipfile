@@ -8,6 +8,7 @@ aiogram = "*"
 mysql-connector-python = "*"
 pandas = "*"
 xlrd = "*"
+pillow = "*"
 
 [dev-packages]
 
