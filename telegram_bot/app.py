@@ -1,12 +1,14 @@
 import logging
+import re
 
 from aiogram import Bot, Dispatcher, executor, types
-from aiogram.types import ContentTypes, Message, InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.types import ContentTypes, Message
 
 from telegram_bot.config.constant_strings import HELLO_WORDS, generate_users_string, UNAUTHORIZED_ERROR, \
     DOWNLOAD_LOADING, DOWNLOAD_COMPLETED, MIGRATION_COMPLETED, IMAGE_DOWNLOAD_COMPLETED
 from telegram_bot.config.env_vars import TELEGRAM_API_TOKEN, EXCEL_DOWNLOAD_PATH, IMAGE_DOWNLOAD_PATH
 from telegram_bot.resources.excel.migration import Migration
+from telegram_bot.resources.keyboard.inline_keyboard import InlineKeyBoard
 from telegram_bot.resources.mysql.catalog import Catalog
 
 from telegram_bot.resources.mysql.users import Users
@@ -18,17 +20,17 @@ dp = Dispatcher(bot)
 users = Users()
 migration = Migration()
 catalog = Catalog()
-inline_back_button = InlineKeyboardButton('Back', callback_data='back_button')
-inline_next_button = InlineKeyboardButton('Next', callback_data='next_button')
-inline_add_button = InlineKeyboardButton('Добавить для обсуждения', callback_data='add_button')
-inline_kb_back_and_next = InlineKeyboardMarkup().add(inline_back_button, inline_next_button).add(inline_add_button)
-inline_kb_back_only = InlineKeyboardMarkup().add(inline_back_button).add(inline_add_button)
-inline_kb_next_only = InlineKeyboardMarkup().add(inline_next_button).add(inline_add_button)
-inline_kb_add_only = InlineKeyboardMarkup().add(inline_add_button)
+inline_keyboard = InlineKeyBoard()
 
 
-@dp.message_handler(commands=['start', 'help'])
+@dp.message_handler(commands=['start'])
 async def send_welcome(message: types.Message):
+    users.insert_user(message.chat.id, message.chat.username)
+    await message.reply(HELLO_WORDS)
+
+
+@dp.message_handler(commands=['help'])
+async def get_help(message: types.Message):
     users.insert_user(message.chat.id, message.chat.username)
     await message.reply(HELLO_WORDS)
 
@@ -64,49 +66,66 @@ async def image_handle(message: Message):
 
 @dp.message_handler()
 async def get_fuzzy_vinyl(message: types.Message):
-    vinyl, length = catalog.get_vinyl_by_number_and_length(message.text, 0)
-    if length > 0:
-        await bot.send_photo(message.chat.id,
-                             caption=f'Результат поиска по: \'{message.text}\'. Всего: {length}\n1. {vinyl[0]} - {vinyl[1]}\nDiscogs - {vinyl[2]}',
-                             photo=open(f'{IMAGE_DOWNLOAD_PATH}{vinyl[3]}.png', 'rb'),
-                             reply_markup=inline_kb_next_only if length > 1 else inline_kb_add_only)
-    else:
-        await bot.send_message(message.chat.id, 'Нет результатов')
+    await inline_keyboard.initial_slider(0, bot, message.text, message.from_user.id, message.chat.id)
 
 
 @dp.callback_query_handler(lambda c: c.data == 'next_button')
 async def process_callback_next_button(callback_query: types.CallbackQuery):
     word, number, length = catalog.get_info_from_caption(callback_query.message.caption)
-    vinyl, length = catalog.get_vinyl_by_number_and_length(word, number)
-    await bot.edit_message_media(
-        chat_id=callback_query.message.chat.id,
-        message_id=callback_query.message.message_id,
-        media=types.InputMedia(
-            type='photo',
-            caption=f'Результат поиска по: \'{word}\'. Всего: {length}\n{number + 1}. {vinyl[0]} - {vinyl[1]}\nDiscogs - {vinyl[2]}',
-            media=open(f'{IMAGE_DOWNLOAD_PATH}{vinyl[3]}.png', 'rb')),
-        reply_markup=inline_kb_back_only if number + 1 == length else inline_kb_back_and_next)
+    await inline_keyboard.edit_slider(number, bot, word, callback_query.message.message_id, callback_query.message.chat.id, callback_query.from_user.id)
 
 
 @dp.callback_query_handler(lambda c: c.data == 'back_button')
 async def process_callback_back_button(callback_query: types.CallbackQuery):
     word, number, length = catalog.get_info_from_caption(callback_query.message.caption)
-    vinyl, length = catalog.get_vinyl_by_number_and_length(word, number - 2)
-    await bot.edit_message_media(
-        chat_id=callback_query.message.chat.id,
-        message_id=callback_query.message.message_id,
-        media=types.InputMedia(
-            type='photo',
-            caption=f'Результат поиска по: \'{word}\'. Всего: {length}\n{number - 1}. {vinyl[0]} - {vinyl[1]}\nDiscogs - {vinyl[2]}',
-            media=open(f'{IMAGE_DOWNLOAD_PATH}{vinyl[3]}.png', 'rb')),
-        reply_markup=inline_kb_next_only if number - 1 == 1 else inline_kb_back_and_next)
+    await inline_keyboard.edit_slider(number - 2, bot, word, callback_query.message.message_id, callback_query.message.chat.id, callback_query.from_user.id)
 
 
 @dp.callback_query_handler(lambda c: c.data == 'add_button')
 async def process_callback_add_button(callback_query: types.CallbackQuery):
     word, number, length = catalog.get_info_from_caption(callback_query.message.caption)
-    vinyl, length = catalog.get_vinyl_by_number_and_length(word, number)
-    await bot.send_message(555352073, "test message")
+    vinyl, length = catalog.get_vinyl_by_number_and_length(word, number - 1, callback_query.from_user.id)
+    catalog.add_vinyl_to_bucket(callback_query.from_user.id, vinyl[4])
+    await inline_keyboard.edit_slider(number - 1, bot, word, callback_query.message.message_id, callback_query.message.chat.id, callback_query.from_user.id)
+
+
+@dp.callback_query_handler(lambda c: c.data == 'cancel_button')
+async def process_callback_cancel_button(callback_query: types.CallbackQuery):
+    word, number, length = catalog.get_info_from_caption(callback_query.message.caption)
+    vinyl, length = catalog.get_vinyl_by_number_and_length(word, number - 1, callback_query.from_user.id)
+    catalog.remove_vinyl_from_bucket(callback_query.from_user.id, vinyl[4])
+    await inline_keyboard.edit_slider(number - 1, bot, word, callback_query.message.message_id, callback_query.message.chat.id, callback_query.from_user.id)
+
+
+@dp.callback_query_handler(lambda c: c.data == 'back_button')
+async def process_callback_back_button(callback_query: types.CallbackQuery):
+    word, number, length = catalog.get_info_from_caption(callback_query.message.caption)
+    await inline_keyboard.edit_slider(number - 2, bot, word, callback_query.message.message_id, callback_query.message.chat.id, callback_query.from_user.id)
+
+
+@dp.callback_query_handler(lambda c: 'list' in c.data)
+async def process_callback_table_button(callback_query: types.CallbackQuery):
+    word, number, length = catalog.get_info_from_caption(callback_query.message.caption)
+    await inline_keyboard.open_slider_from_table(word, number, length, int(callback_query.data.split('list-')[1]), bot, callback_query.message.chat.id, callback_query.message.message_id, callback_query.from_user.id)
+
+
+@dp.callback_query_handler(lambda c: c.data == 'table_next_button')
+async def process_callback_table_next_button(callback_query: types.CallbackQuery):
+    word, number, length = catalog.get_info_from_caption(callback_query.message.caption)
+    await inline_keyboard.edit_table(number, bot, word, callback_query.message.message_id, callback_query.message.chat.id, callback_query.from_user.id)
+
+
+@dp.callback_query_handler(lambda c: c.data == 'table_back_button')
+async def process_callback_table_back_button(callback_query: types.CallbackQuery):
+    word, number, length = catalog.get_info_from_caption(callback_query.message.caption)
+    await inline_keyboard.edit_table(number - 2, bot, word, callback_query.message.message_id, callback_query.message.chat.id, callback_query.from_user.id)
+
+
+@dp.callback_query_handler(lambda c: c.data == 'return_button')
+async def process_callback_return_button(callback_query: types.CallbackQuery):
+    word, number, length = catalog.get_info_from_caption(callback_query.message.caption)
+    await inline_keyboard.edit_table(number - 1, bot, word, callback_query.message.message_id, callback_query.message.chat.id, callback_query.from_user.id)
+
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)

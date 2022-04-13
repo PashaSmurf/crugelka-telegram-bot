@@ -12,3 +12,6 @@ MYSQL_DATABASE = os.environ.get('MYSQL_DATABASE')
 # file path
 EXCEL_DOWNLOAD_PATH = os.environ.get('EXCEL_DOWNLOAD_PATH')
 IMAGE_DOWNLOAD_PATH = os.environ.get('IMAGE_DOWNLOAD_PATH')
+
+# table configs
+TABLE_SIZE = int(os.environ.get('TABLE_SIZE', 5))
