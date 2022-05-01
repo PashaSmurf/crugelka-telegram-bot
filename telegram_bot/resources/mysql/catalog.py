@@ -45,3 +45,15 @@ class Catalog:
                 f'WHERE id = {vinyl_id}'
         cursor = self.db_container.select(query)
         return cursor.fetchall()[0]
+
+    def get_bucket(self, user_id: int):
+        query = \
+            f'SELECT DISTINCT id, author, name ' \
+            f'FROM CATALOG left outer join BUCKET ' \
+            f'on CATALOG.id = BUCKET.catalog_id where user_id = {user_id};'
+
+        cursor = self.db_container.select(query)
+        return cursor.fetchall()
+
+    def reset_bucket_by_user_id(self, user_id: int):
+        self.db_container.insert(f'DELETE FROM BUCKET WHERE user_id = {user_id};')

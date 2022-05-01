@@ -1,7 +1,7 @@
 from itertools import islice
 
 from aiogram import types, Bot
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 
 from telegram_bot.config.env_vars import IMAGE_DOWNLOAD_PATH, TABLE_SIZE
 from telegram_bot.resources.mysql.catalog import Catalog
@@ -10,6 +10,7 @@ catalog = Catalog()
 
 
 class InlineKeyBoard:
+
     inline_back_button = InlineKeyboardButton('Back', callback_data='back_button')
     inline_next_button = InlineKeyboardButton('Next', callback_data='next_button')
     inline_add_button = InlineKeyboardButton('Добавить для обсуждения', callback_data='add_button')
@@ -17,6 +18,7 @@ class InlineKeyBoard:
     inline_return_button = InlineKeyboardButton('Обратно к таблице', callback_data='return_button')
     inline_table_back_button = InlineKeyboardButton('Back', callback_data='table_back_button')
     inline_table_next_button = InlineKeyboardButton('Next', callback_data='table_next_button')
+
 
     inline_kb_back_and_next_add = InlineKeyboardMarkup().add(inline_back_button, inline_next_button).add(inline_add_button)
     inline_kb_back_only_add = InlineKeyboardMarkup().add(inline_back_button).add(inline_add_button)
