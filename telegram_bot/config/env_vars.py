@@ -10,9 +10,9 @@ MYSQL_PASSWORD = os.environ.get('MYSQL_PASSWORD')
 MYSQL_DATABASE = os.environ.get('MYSQL_DATABASE')
 
 # file path
-EXCEL_DOWNLOAD_PATH = os.environ.get('EXCEL_DOWNLOAD_PATH')
-ZIP_DOWNLOAD_PATH = os.environ.get('ZIP_DOWNLOAD_PATH')
-IMAGE_DOWNLOAD_PATH = os.environ.get('IMAGE_DOWNLOAD_PATH')
+EXCEL_DOWNLOAD_PATH = os.environ.get('EXCEL_DOWNLOAD_PATH', '../excel/crugelka.xls')
+ZIP_DOWNLOAD_PATH = os.environ.get('ZIP_DOWNLOAD_PATH', '../zip/images.zip')
+IMAGE_DOWNLOAD_PATH = os.environ.get('IMAGE_DOWNLOAD_PATH', '../images/')
 
 # table configs
 TABLE_SIZE = int(os.environ.get('TABLE_SIZE', 5))
