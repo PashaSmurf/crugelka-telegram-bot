@@ -42,5 +42,6 @@ class DBContainer:
                 host=MYSQL_HOST,
                 user=MYSQL_LOGIN,
                 password=MYSQL_PASSWORD,
-                database=MYSQL_DATABASE
+                database=MYSQL_DATABASE,
+                port=3306
             )

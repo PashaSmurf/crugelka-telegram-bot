@@ -1,0 +1,57 @@
+name: Publish on DockerHub and Deploy
+
+on:
+  push:
+    branches: [test, master]
+
+env:
+  VERSION: '1.0.0'
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - uses: actions/setup-python@v1
+        with:
+          python-version: '3.7'
+          architecture: 'x64'
+      - name: Install pipenv
+        uses: dschep/install-pipenv-action@v1
+  build_and_pub:
+    needs: [prepare]
+    runs-on: ubuntu-latest
+    env:
+      LOGIN: ${{ secrets.DOCKER_LOGIN }}
+      NAME: ${{ secrets.DOCKER_NAME }}
+      TELEGRAM_API_TOKEN: ${{ secrets.TEST_TELEGRAM_API_TOKEN }}
+      MYSQL_HOST: ${{ secrets.MYSQL_HOST }}
+      MYSQL_LOGIN: ${{ secrets.MYSQL_LOGIN }}
+      MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+      MYSQL_DATABASE: ${{ secrets.TEST_MYSQL_DATABASE }}
+    steps:
+      - name: Login to docker.io
+        run:  echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_LOGIN }} --password-stdin
+      - uses: actions/checkout@master
+      - name: Build image
+        run: docker build
+          --build-arg TELEGRAM_API_TOKEN=$TELEGRAM_API_TOKEN
+          --build-arg MYSQL_HOST=$MYSQL_HOST
+          --build-arg MYSQL_LOGIN=$MYSQL_LOGIN
+          --build-arg MYSQL_PASSWORD=$MYSQL_PASSWORD
+          --build-arg MYSQL_DATABASE=$MYSQL_DATABASE
+          -t $LOGIN/$NAME:${GITHUB_REF:11}-$VERSION -f Dockerfile .
+      - name: Push image to docker.io
+        run: docker push $LOGIN/$NAME:${GITHUB_REF:11}-$VERSION
+
+  deploy:
+    needs: [ build_and_pub ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: ACTIONS_ALLOW_UNSECURE_COMMANDS
+        id: ACTIONS_ALLOW_UNSECURE_COMMANDS
+        run: echo 'ACTIONS_ALLOW_UNSECURE_COMMANDS=true' >> $GITHUB_ENV
+      - name: Set tag to env
+        run: echo ::set-env name=RELEASE_VERSION::$(echo ${GITHUB_REF:11}-$VERSION)
+      - name: Send webhook for deploy
+        run: "curl --silent --show-error --fail -X POST ${{ secrets.DEPLOYMENT_SERVER }} -H 'Authorization: ${{ secrets.DEPLOYMENT_TOKEN }}' -H 'Content-Type: application/json' -d '{\"owner\": \"${{ secrets.DOCKER_LOGIN }}\", \"repository\": \"${{ secrets.DOCKER_NAME }}\", \"tag\": \"${{ env.RELEASE_VERSION }}\", \"volumes\": [\"/Users/pavel/excel:/usr/src/excel\", \"/Users/pavel/images:/usr/src/images\", \"/Users/pavel/zip:/usr/src/zip\"], \"ports\": {\"8080\": 8090}}'"
