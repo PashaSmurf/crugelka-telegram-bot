@@ -16,15 +16,15 @@ class Catalog:
         cursor = self.db_container.select(query)
         return cursor.fetchall()
 
-    def get_vinyl_by_number_and_length(self, word: str, number: int, user_id: int) -> tuple:
+    def get_vinyl_by_number_and_length(self, word: str, number: int, user_id: int) -> list:
         try:
             results = self.get_fuzzy_vinyl(word, user_id)
-            if len(results) > 10:
-                return results, len(results)
-            else:
-                return results[number], len(results)
+            # if len(results) > 2:
+            return results
+            # else:
+            #     return results[number], len(results)
         except IndexError:
-            return None, 0
+            return None
 
     @staticmethod
     def get_info_from_caption(caption: str) -> tuple:

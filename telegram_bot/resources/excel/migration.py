@@ -13,10 +13,10 @@ class Migration:
         remove_bucket = 'DELETE FROM BUCKET;'
         remove_catalog = 'DELETE FROM CATALOG;'
         reset_auto = 'ALTER TABLE CATALOG AUTO_INCREMENT = 1;'
-        query = 'INSERT INTO CATALOG (name, author, discogs, category, image) VALUES (%s, %s, %s, %s, %s);'
+        query = 'INSERT INTO CATALOG (name, author, discogs, category, image, in_stock) VALUES (%s, %s, %s, %s, %s, %s);'
         sheet = pandas.read_excel(EXCEL_DOWNLOAD_PATH, sheet_name='vinyl')
         for row in sheet.iloc:
-            values.append((row[0], row[1], row[2], row[4], row[3]))
+            values.append((row[0], row[1], row[2], row[4], row[3], int(row[5])))
 
         self.db_container.insert(remove_bucket)
         self.db_container.insert(remove_catalog)

@@ -28,7 +28,7 @@ class Bucket:
 
     def edit_bucket(self, callback_query: types.CallbackQuery, action: str):
         bucket = catalog.get_bucket(callback_query.from_user.id)
-        number = int(callback_query.data.split('button-')[1])
+        number = int(callback_query.data.split('button|')[1])
         return callback_query.bot.edit_message_text(
             chat_id=callback_query.message.chat.id,
             message_id=callback_query.message.message_id,
@@ -39,7 +39,7 @@ class Bucket:
     def get_bucket_markup(self, number: int, bucket: list):
         inline_keyboard = InlineKeyboardMarkup()
         for row in islice(bucket, number * TABLE_SIZE, number * TABLE_SIZE + TABLE_SIZE):
-            inline_button = InlineKeyboardButton(f'Убрать {row[1]} - {row[2]}', callback_data=f'remove_bucket_button-{row[0]}')
+            inline_button = InlineKeyboardButton(f'Убрать {row[1]} - {row[2]}', callback_data=f'remove_bucket_button|{row[0]}')
             inline_keyboard.add(inline_button)
         return self.get_bucket_buttons(inline_keyboard, number, len(bucket))
 
@@ -50,8 +50,8 @@ class Bucket:
         return f'Ваши предпочтения: {from_number} - {to_number} из {length}'
 
     def get_bucket_buttons(self, inline_keyboard, number: int, length: int):
-        inline_bucket_back_button = InlineKeyboardButton('Back', callback_data=f'bucket_back_button-{number}')
-        inline_bucket_next_button = InlineKeyboardButton('Next', callback_data=f'bucket_next_button-{number}')
+        inline_bucket_back_button = InlineKeyboardButton('Back', callback_data=f'bucket_back_button|{number}')
+        inline_bucket_next_button = InlineKeyboardButton('Next', callback_data=f'bucket_next_button|{number}')
         if number == 0 and length > TABLE_SIZE:
             inline_keyboard.add(inline_bucket_next_button)
         elif number == 0 and number < length:
@@ -64,7 +64,7 @@ class Bucket:
         return inline_keyboard.add(self.inline_bucket_send_button)
 
     def remove_item_from_bucket(self, callback_query: types.CallbackQuery):
-        vinyl_id = int(callback_query.data.split('button-')[1])
+        vinyl_id = int(callback_query.data.split('button|')[1])
         catalog.remove_vinyl_from_bucket(callback_query.from_user.id, vinyl_id)
         bucket = catalog.get_bucket(callback_query.from_user.id)
         return callback_query.bot.edit_message_text(
