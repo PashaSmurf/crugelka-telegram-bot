@@ -10,19 +10,16 @@ class Catalog:
         query = f'SELECT DISTINCT author, name, discogs, image, id, ' \
                 f'IF(user_id = {user_id}, true, false) as in_bucket ' \
                 f'FROM CATALOG LEFT OUTER JOIN BUCKET ON CATALOG.id = BUCKET.catalog_id ' \
-                f'WHERE name LIKE \'%{word}%\' ' \
-                f'OR author LIKE \'%{word}%\' OR category LIKE \'%{word}%\''
+                f'WHERE in_stock = 1 and (name LIKE \'%{word}%\' ' \
+                f'OR author LIKE \'%{word}%\' OR category LIKE \'%{word}%\')'
 
         cursor = self.db_container.select(query)
         return cursor.fetchall()
 
-    def get_vinyl_by_number_and_length(self, word: str, number: int, user_id: int) -> list:
+    def get_vinyl_by_number_and_length(self, word: str, user_id: int) -> list:
         try:
             results = self.get_fuzzy_vinyl(word, user_id)
-            # if len(results) > 2:
             return results
-            # else:
-            #     return results[number], len(results)
         except IndexError:
             return None
 

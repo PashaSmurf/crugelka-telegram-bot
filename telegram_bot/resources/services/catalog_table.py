@@ -16,7 +16,7 @@ slider = Slider()
 
 class CatalogTable:
     def show_table(self, message: Message):
-        vinyl = catalog.get_vinyl_by_number_and_length(message.text, 0, message.from_user.id)
+        vinyl = catalog.get_vinyl_by_number_and_length(message.text, message.from_user.id)
         if len(vinyl) == 0:
             return message.bot.send_message(message.chat.id, 'Нет результатов')
         else:
@@ -55,7 +55,7 @@ class CatalogTable:
         split_number = int(split[1])
         number = split_number + 1 if action == 'next' else split_number - 1 if action == 'back' else split_number
         message = split[2]
-        vinyl = catalog.get_vinyl_by_number_and_length(message, number, callback_query.from_user.id)
+        vinyl = catalog.get_vinyl_by_number_and_length(message, callback_query.from_user.id)
         return callback_query.bot.edit_message_media(
             chat_id=callback_query.message.chat.id,
             message_id=callback_query.message.message_id,
