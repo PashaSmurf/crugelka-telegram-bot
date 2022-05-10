@@ -32,8 +32,9 @@ class DBContainer:
             print(err)
 
     def _get_connection(self):
-        if not self.db_connection:
-            self.db_connection = self._connect()
+        if self.db_connection and self.db_connection.is_connected():
+            return self.db_connection
+        self.db_connection = self._connect()
         return self.db_connection
 
     @staticmethod
