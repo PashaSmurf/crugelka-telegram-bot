@@ -67,6 +67,12 @@ class Bucket:
         vinyl_id = int(callback_query.data.split('button|')[1])
         catalog.remove_vinyl_from_bucket(callback_query.from_user.id, vinyl_id)
         bucket = catalog.get_bucket(callback_query.from_user.id)
+        if len(bucket) == 0:
+            return callback_query.bot.edit_message_text(
+                chat_id=callback_query.message.chat.id,
+                message_id=callback_query.message.message_id,
+                text='У Вас нет предпочтений',
+            )
         return callback_query.bot.edit_message_text(
             chat_id=callback_query.message.chat.id,
             message_id=callback_query.message.message_id,
@@ -76,7 +82,7 @@ class Bucket:
 
     async def send_bucket_to_admin(self, callback_query: types.CallbackQuery):
         bucket = catalog.get_bucket(callback_query.from_user.id)
-        # catalog.reset_bucket_by_user_id(callback_query.from_user.id)
+        catalog.reset_bucket_by_user_id(callback_query.from_user.id)
         await callback_query.bot.send_message(
             894744518,
             self.get_all_bucket(bucket, str(callback_query.from_user.username))
