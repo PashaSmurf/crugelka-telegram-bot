@@ -26,7 +26,9 @@ class Slider:
 
     @staticmethod
     def get_short_slider_caption(author: str, name: str, discogs: str):
-        return f'{author} - {name}\nDiscogs: {discogs}'
+        if discogs:
+            return f'{author} - {name}\nDiscogs: {discogs}'
+        return f'{author} - {name}'
 
     @staticmethod
     def get_short_slider_buttons(vinyl_id: int, word: str, number: int, in_bucket: bool):
