@@ -8,7 +8,7 @@ class Users:
         self.db_container.insert(f'INSERT INTO USERS (id, username, full_name, role) VALUES ({user_id}, \'{username}\', \'{full_name}\', {0})')
 
     def select_users(self):
-        return self.db_container.select('SELECT * FROM USERS').fetchall()
+        return self.db_container.select('SELECT * FROM USERS')
 
     def is_admin(self, user_id: int):
         user = self.db_container.select(f'SELECT ROLE FROM USERS WHERE ID = {user_id}')

@@ -13,8 +13,7 @@ class Catalog:
                 f'WHERE in_stock = 1 and (name LIKE \'%{word}%\' ' \
                 f'OR author LIKE \'%{word}%\' OR category LIKE \'%{word}%\')'
 
-        cursor = self.db_container.select(query)
-        return cursor.fetchall()
+        return self.db_container.select(query)
 
     def get_vinyl_by_number_and_length(self, word: str, user_id: int) -> list:
         try:
@@ -40,8 +39,7 @@ class Catalog:
                 f'IF(user_id = {user_id}, true, false) as in_bucket ' \
                 f'FROM CATALOG left outer join BUCKET on CATALOG.id = BUCKET.catalog_id ' \
                 f'WHERE id = {vinyl_id}'
-        cursor = self.db_container.select(query)
-        return cursor.fetchall()[0]
+        return self.db_container.select(query)[0]
 
     def get_bucket(self, user_id: int):
         query = \
@@ -49,8 +47,7 @@ class Catalog:
             f'FROM CATALOG left outer join BUCKET ' \
             f'on CATALOG.id = BUCKET.catalog_id where user_id = {user_id};'
 
-        cursor = self.db_container.select(query)
-        return cursor.fetchall()
+        return self.db_container.select(query)
 
     def reset_bucket_by_user_id(self, user_id: int):
         self.db_container.insert(f'DELETE FROM BUCKET WHERE user_id = {user_id};')
