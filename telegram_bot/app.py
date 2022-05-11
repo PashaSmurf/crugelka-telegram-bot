@@ -34,7 +34,7 @@ slider = Slider()
 
 @dp.message_handler(commands=['start'])
 async def send_welcome(message: types.Message):
-    users.insert_user(message.chat.id, message.chat.username)
+    users.insert_user(message.chat.id, message.chat.username, message.chat.full_name)
     await message.reply(HELLO_WORDS)
 
 

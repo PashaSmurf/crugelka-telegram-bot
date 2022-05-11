@@ -12,7 +12,7 @@ def generate_users_string(users: list):
     message = 'Все пользователи Бота:\n'
     user_number = 1
     for user in users:
-        message += f'{user_number}. @{user[1]}\n'
+        message += f'{user_number}. @{user[1]} - {user[2]}\n'
         user_number += 1
 
     return message

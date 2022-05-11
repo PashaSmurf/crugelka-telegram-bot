@@ -4,8 +4,8 @@ from telegram_bot.resources.mysql.connection import DBContainer
 class Users:
     db_container = DBContainer()
 
-    def insert_user(self, user_id: int, username: str):
-        self.db_container.insert(f'INSERT INTO USERS (id, username, role) VALUES ({user_id}, \'{username}\', {0})')
+    def insert_user(self, user_id: int, username: str, full_name: str):
+        self.db_container.insert(f'INSERT INTO USERS (id, username, full_name, role) VALUES ({user_id}, \'{username}\', \'{full_name}\', {0})')
 
     def select_users(self):
         return self.db_container.select('SELECT * FROM USERS').fetchall()
