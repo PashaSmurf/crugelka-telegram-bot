@@ -16,6 +16,7 @@ from telegram_bot.resources.services.bucket import Bucket
 from telegram_bot.resources.services.catalog_table import CatalogTable
 from telegram_bot.resources.services.slider import Slider
 from telegram_bot.resources.services.spam import Spam
+from telegram_bot.resources.services.wish import Wish
 from telegram_bot.resources.utils.images import Images
 
 logging.basicConfig(level=logging.INFO)
@@ -30,6 +31,7 @@ spam = Spam()
 catalog_table = CatalogTable()
 images = Images()
 slider = Slider()
+wish = Wish()
 
 
 @dp.message_handler(commands=['start'])
@@ -41,11 +43,6 @@ async def send_welcome(message: types.Message):
 @dp.message_handler(commands=['bucket'])
 async def show_user_bucket(message: types.Message):
     await bucket.show_bucket(message)
-
-
-@dp.message_handler(commands=['spam'])
-async def send_spam(message: types.Message):
-    await spam.send_spam(message)
 
 
 @dp.message_handler(commands=['users'])
@@ -68,6 +65,22 @@ async def file_handle(message: Message):
         await message.reply(text=DOWNLOAD_COMPLETED)
         migration.excel_migration()
         await message.reply(text=MIGRATION_COMPLETED)
+
+
+@dp.message_handler(lambda message:
+                    (message.caption and '/spam' in message.caption) or
+                    (message.text and '/spam' in message.text),
+                    content_types=ContentTypes.PHOTO | ContentTypes.TEXT)
+async def spam_handle(message: Message):
+    await spam.send_spam(message)
+
+
+@dp.message_handler(lambda message:
+                    (message.caption and '/wish' in message.caption) or
+                    (message.text and '/wish' in message.text),
+                    content_types=ContentTypes.PHOTO | ContentTypes.TEXT)
+async def wish_handle(message: Message):
+    await wish.send_wish(message)
 
 
 @dp.message_handler(content_types=ContentTypes.PHOTO)

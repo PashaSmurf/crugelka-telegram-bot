@@ -10,6 +10,9 @@ class Users:
     def select_users(self):
         return self.db_container.select('SELECT * FROM USERS')
 
+    def select_admins(self):
+        return self.db_container.select('SELECT * FROM USERS WHERE role = 1')
+
     def is_admin(self, user_id: int):
         user = self.db_container.select(f'SELECT ROLE FROM USERS WHERE ID = {user_id}')
         for row in user:

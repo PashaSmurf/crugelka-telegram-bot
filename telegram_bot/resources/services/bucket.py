@@ -5,8 +5,10 @@ from aiogram.types import InlineKeyboardButton, Message, InlineKeyboardMarkup
 
 from telegram_bot.config.env_vars import TABLE_SIZE
 from telegram_bot.resources.mysql.catalog import Catalog
+from telegram_bot.resources.mysql.users import Users
 
 catalog = Catalog()
+users = Users()
 
 
 class Bucket:
@@ -83,10 +85,12 @@ class Bucket:
     async def send_bucket_to_admin(self, callback_query: types.CallbackQuery):
         bucket = catalog.get_bucket(callback_query.from_user.id)
         catalog.reset_bucket_by_user_id(callback_query.from_user.id)
-        await callback_query.bot.send_message(
-            5145106511,
-            self.get_all_bucket(bucket, str(callback_query.from_user.username))
-        )
+        admins = users.select_admins()
+        for admin in admins:
+            await callback_query.bot.send_message(
+                admin[0],
+                self.get_all_bucket(bucket, str(callback_query.from_user.username))
+            )
         await callback_query.bot.edit_message_text(
             chat_id=callback_query.message.chat.id,
             message_id=callback_query.message.message_id,
