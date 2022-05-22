@@ -89,7 +89,7 @@ class Bucket:
         for admin in admins:
             await callback_query.bot.send_message(
                 admin[0],
-                self.get_all_bucket(bucket, str(callback_query.from_user.username))
+                self.get_all_bucket(bucket, str(callback_query.from_user.username), str(callback_query.from_user.full_name))
             )
         await callback_query.bot.edit_message_text(
             chat_id=callback_query.message.chat.id,
@@ -99,8 +99,8 @@ class Bucket:
         )
 
     @staticmethod
-    def get_all_bucket(bucket: list, username: str) -> str:
-        result = f'Пользователь - @{username}\nПожелания:\n'
+    def get_all_bucket(bucket: list, username: str, fullname: str) -> str:
+        result = f'Пользователь - @{username}, {fullname}\nПожелания:\n'
         for item in bucket:
             result += f'{item[1]} - {item[2]}\n'
         return result
